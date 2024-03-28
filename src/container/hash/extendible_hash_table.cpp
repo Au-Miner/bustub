@@ -109,7 +109,7 @@ void ExtendibleHashTable<K, V>::Insert(const K &key, const V &value) {
     for (int i = startIdx; i < (1 << global_depth_); i += (1 << (localDepth + 1))) {
       dir_[i] = lastBucket;
       dir_[i + (1 << localDepth)] = newBucket;
-    }\
+    }
     for (const auto& it : list_) {
       dir_[IndexOf(it.first)]->Insert(it.first, it.second);
     }

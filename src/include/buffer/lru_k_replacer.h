@@ -13,6 +13,7 @@
 #pragma once
 
 #include <limits>
+#include <queue>
 #include <list>
 #include <mutex>  // NOLINT
 #include <unordered_map>
@@ -78,7 +79,7 @@ class LRUKReplacer {
    * @brief Record the event that the given frame id is accessed at current timestamp.
    * Create a new entry for access history if frame id has not been seen before.
    *
-   * If frame id is invalid (ie. larger than replacer_size_), throw an exception. You can
+   * If frame id is invalid  (ie. larger than replacer_size_), throw an exception. You can
    * also use BUSTUB_ASSERT to abort the process if frame id is invalid.
    *
    * @param frame_id id of frame that received a new access.
@@ -135,11 +136,15 @@ class LRUKReplacer {
  private:
   // TODO(student): implement me! You can replace these member variables as you like.
   // Remove maybe_unused if you start using them.
-  [[maybe_unused]] size_t current_timestamp_{0};
+  size_t current_timestamp_{0};
   [[maybe_unused]] size_t curr_size_{0};
-  [[maybe_unused]] size_t replacer_size_;
-  [[maybe_unused]] size_t k_;
+  size_t replacer_size_;
+  size_t k_;
   std::mutex latch_;
+  std::unordered_map<frame_id_t, std::shared_ptr<std::queue<size_t>> >frameRecords;
+  std::unordered_map<frame_id_t, bool>frameEvictable;
+  size_t maxTimestamp = 0x3f3f3f3f;
+  size_t evictableNum = 0;
 };
 
 }  // namespace bustub

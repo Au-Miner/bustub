@@ -23,14 +23,14 @@ namespace bustub {
 
 // NOLINTNEXTLINE
 // Check whether pages containing terminal characters can be recovered
-TEST(BufferPoolManagerInstanceTest, DISABLED_BinaryDataTest) {
+TEST(BufferPoolManagerInstanceTest, BinaryDataTest) {
   const std::string db_name = "test.db";
   const size_t buffer_pool_size = 10;
   const size_t k = 5;
 
   std::random_device r;
   std::default_random_engine rng(r());
-  std::uniform_int_distribution<char> uniform_dist(0);
+  std::uniform_int_distribution<int> uniform_dist(0);
 
   auto *disk_manager = new DiskManager(db_name);
   auto *bpm = new BufferPoolManagerInstance(buffer_pool_size, disk_manager, k);
@@ -45,7 +45,7 @@ TEST(BufferPoolManagerInstanceTest, DISABLED_BinaryDataTest) {
   char random_binary_data[BUSTUB_PAGE_SIZE];
   // Generate random binary data
   for (char &i : random_binary_data) {
-    i = uniform_dist(rng);
+    i = char(uniform_dist(rng));
   }
 
   // Insert terminal characters both in the middle and at end
@@ -89,7 +89,7 @@ TEST(BufferPoolManagerInstanceTest, DISABLED_BinaryDataTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(BufferPoolManagerInstanceTest, DISABLED_SampleTest) {
+TEST(BufferPoolManagerInstanceTest, SampleTest) {
   const std::string db_name = "test.db";
   const size_t buffer_pool_size = 10;
   const size_t k = 5;
