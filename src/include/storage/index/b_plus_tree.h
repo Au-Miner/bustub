@@ -23,6 +23,8 @@ namespace bustub {
 
 #define BPLUSTREE_TYPE BPlusTree<KeyType, ValueType, KeyComparator>
 
+    enum class Operation { SEARCH, INSERT, DELETE };
+
 /**
  * Main class providing the API for the Interactive B+ Tree.
  *
@@ -33,62 +35,93 @@ namespace bustub {
  * (3) The structure should shrink and grow dynamically
  * (4) Implement index iterator for range scan
  */
-INDEX_TEMPLATE_ARGUMENTS
-class BPlusTree {
-  using InternalPage = BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator>;
-  using LeafPage = BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>;
+    INDEX_TEMPLATE_ARGUMENTS
+    class BPlusTree {
+        using InternalPage = BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator>;
+        using LeafPage = BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>;
 
- public:
-  explicit BPlusTree(std::string name, BufferPoolManager *buffer_pool_manager, const KeyComparator &comparator,
-                     int leaf_max_size = LEAF_PAGE_SIZE, int internal_max_size = INTERNAL_PAGE_SIZE);
+    public:
+        explicit BPlusTree(std::string name, BufferPoolManager *buffer_pool_manager, const KeyComparator &comparator,
+                           int leaf_max_size = LEAF_PAGE_SIZE, int internal_max_size = INTERNAL_PAGE_SIZE);
 
-  // Returns true if this B+ tree has no keys and values.
-  auto IsEmpty() const -> bool;
+        // Returns true if this B+ tree has no keys and values.
+        auto IsEmpty() const -> bool;
 
-  // Insert a key-value pair into this B+ tree.
-  auto Insert(const KeyType &key, const ValueType &value, Transaction *transaction = nullptr) -> bool;
+        // Insert a key-value pair into this B+ tree.
+        auto Insert(const KeyType &key, const ValueType &value, Transaction *transaction = nullptr) -> bool;
 
-  // Remove a key and its value from this B+ tree.
-  void Remove(const KeyType &key, Transaction *transaction = nullptr);
+        // Remove a key and its value from this B+ tree.
+        void Remove(const KeyType &key, Transaction *transaction = nullptr);
 
-  // return the value associated with a given key
-  auto GetValue(const KeyType &key, std::vector<ValueType> *result, Transaction *transaction = nullptr) -> bool;
+        // return the value associated with a given key
+        auto GetValue(const KeyType &key, std::vector<ValueType> *result, Transaction *transaction = nullptr) -> bool;
 
-  // return the page id of the root node
-  auto GetRootPageId() -> page_id_t;
+        // return the page id of the root node
+        auto GetRootPageId() -> page_id_t;
 
-  // index iterator
-  auto Begin() -> INDEXITERATOR_TYPE;
-  auto Begin(const KeyType &key) -> INDEXITERATOR_TYPE;
-  auto End() -> INDEXITERATOR_TYPE;
+        // index iterator
+        auto Begin() -> INDEXITERATOR_TYPE;
+        auto Begin(const KeyType &key) -> INDEXITERATOR_TYPE;
+        auto End() -> INDEXITERATOR_TYPE;
 
-  // print the B+ tree
-  void Print(BufferPoolManager *bpm);
+        // print the B+ tree
+        void Print(BufferPoolManager *bpm);
 
-  // draw the B+ tree
-  void Draw(BufferPoolManager *bpm, const std::string &outf);
+        // draw the B+ tree
+        void Draw(BufferPoolManager *bpm, const std::string &outf);
 
-  // read data from file and insert one by one
-  void InsertFromFile(const std::string &file_name, Transaction *transaction = nullptr);
+        // read data from file and insert one by one
+        void InsertFromFile(const std::string &file_name, Transaction *transaction = nullptr);
 
-  // read data from file and remove one by one
-  void RemoveFromFile(const std::string &file_name, Transaction *transaction = nullptr);
+        // read data from file and remove one by one
+        void RemoveFromFile(const std::string &file_name, Transaction *transaction = nullptr);
 
- private:
-  void UpdateRootPageId(int insert_record = 0);
+    private:
+        void UpdateRootPageId(int insert_record = 0);
 
-  /* Debug Routines for FREE!! */
-  void ToGraph(BPlusTreePage *page, BufferPoolManager *bpm, std::ofstream &out) const;
+        /* Debug Routines for FREE!! */
+        void ToGraph(BPlusTreePage *page, BufferPoolManager *bpm, std::ofstream &out) const;
 
-  void ToString(BPlusTreePage *page, BufferPoolManager *bpm) const;
+        void ToString(BPlusTreePage *page, BufferPoolManager *bpm) const;
 
-  // member variable
-  std::string index_name_;
-  page_id_t root_page_id_;
-  BufferPoolManager *buffer_pool_manager_;
-  KeyComparator comparator_;
-  int leaf_max_size_;
-  int internal_max_size_;
-};
+        auto FindLeaf(const KeyType &key, const Operation operation, Transaction *transaction = nullptr,
+                      bool leftMost = false, bool rightMost = false) -> Page *;
+
+        void StartNewTree(const KeyType &key, const ValueType &value);
+
+        auto InsertIntoLeaf(const KeyType &key, const ValueType &value, Transaction *transaction) -> bool;
+
+        template<typename N>
+        auto Split(N *node) -> N *;
+
+        void InsertIntoParent(BPlusTreePage *oldNode, BPlusTreePage *newNode, const KeyType &key, Transaction *transaction);
+
+        void ReleaseLatchFromQueue(Transaction *transaction);
+
+        template<typename N>
+        auto CoalesceOrRedistribute(N *node, Transaction *transaction) -> bool;
+
+        template <typename N>
+        void Redistribute(N *neighbor_node, N *node,
+                                          BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> *parent, int index,
+                                          bool from_prev);
+
+        auto AdjustRoot(BPlusTreePage *old_root_node) -> bool;
+
+        template <typename N>
+        auto Coalesce(N *neighbor_node, N *node,
+                      BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> *parent, int index,
+                      Transaction *transaction) -> bool;
+
+        // member variable
+        std::string index_name_;
+        page_id_t root_page_id_;
+        BufferPoolManager *buffer_pool_manager_;
+        KeyComparator comparator_;
+        int leaf_max_size_;
+        int internal_max_size_;
+        ReaderWriterLatch root_page_id_latch_;
+
+    };
 
 }  // namespace bustub

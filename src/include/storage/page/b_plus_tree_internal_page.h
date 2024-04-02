@@ -32,18 +32,45 @@ namespace bustub {
  * | HEADER | KEY(1)+PAGE_ID(1) | KEY(2)+PAGE_ID(2) | ... | KEY(n)+PAGE_ID(n) |
  *  --------------------------------------------------------------------------
  */
-INDEX_TEMPLATE_ARGUMENTS
-class BPlusTreeInternalPage : public BPlusTreePage {
- public:
-  // must call initialize method after "create" a new node
-  void Init(page_id_t page_id, page_id_t parent_id = INVALID_PAGE_ID, int max_size = INTERNAL_PAGE_SIZE);
+    INDEX_TEMPLATE_ARGUMENTS
+    class BPlusTreeInternalPage : public BPlusTreePage {
+    public:
+        // must call initialize method after "create" a new node
+        void Init(page_id_t page_id, page_id_t parent_id = INVALID_PAGE_ID, int max_size = INTERNAL_PAGE_SIZE);
 
-  auto KeyAt(int index) const -> KeyType;
-  void SetKeyAt(int index, const KeyType &key);
-  auto ValueAt(int index) const -> ValueType;
+        auto KeyAt(int index) const -> KeyType;
+        void SetKeyAt(int index, const KeyType &key);
+        auto ValueAt(int index) const -> ValueType;
+        void SetValueAt(int index, const ValueType &value);
 
- private:
-  // Flexible array member for page data.
-  MappingType array_[1];
-};
+        auto LookUp(const KeyType &k, const KeyComparator &keyComparator) -> int;
+
+        auto FindPos(const KeyType &k, const KeyComparator &keyComparator) const -> page_id_t;
+
+        void MoveHalfTo(BPlusTreeInternalPage *siblingNode, BufferPoolManager *buffer_pool_manager_);
+
+        void CopyNFrom(MappingType * arr, int size, BufferPoolManager *bufferPoolManager);
+
+        auto Insert(const KeyType &key, const ValueType &value, KeyComparator &keyComparator) -> int;
+
+        auto ValueIndex(const ValueType &value) const -> int;
+
+        void CopyLastFrom(const MappingType &pair, BufferPoolManager *bufferPoolManager);
+
+        void CopyFirstFrom(const MappingType &pair, BufferPoolManager *bufferPoolManager);
+
+        void MoveFirstToEndOf(BPlusTreeInternalPage *recipient, const KeyType &middle_key,
+                              BufferPoolManager *bufferPoolManager);
+        void MoveLastToFrontOf(BPlusTreeInternalPage *recipient, const KeyType &middle_key,
+                               BufferPoolManager *bufferPoolManager);
+
+        void MoveAllTo(BPlusTreeInternalPage *recipient, const KeyType &middle_key,
+                       BufferPoolManager *buffer_pool_manager);
+
+        void Remove(int index);
+
+    private:
+        // Flexible array member for page data.
+        MappingType array_[1];
+    };
 }  // namespace bustub

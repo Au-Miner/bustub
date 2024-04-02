@@ -39,20 +39,44 @@ namespace bustub {
  * | ParentPageId (4) | PageId (4) | NextPageId (4)
  *  -----------------------------------------------
  */
-INDEX_TEMPLATE_ARGUMENTS
-class BPlusTreeLeafPage : public BPlusTreePage {
- public:
-  // After creating a new leaf page from buffer pool, must call initialize
-  // method to set default values
-  void Init(page_id_t page_id, page_id_t parent_id = INVALID_PAGE_ID, int max_size = LEAF_PAGE_SIZE);
-  // helper methods
-  auto GetNextPageId() const -> page_id_t;
-  void SetNextPageId(page_id_t next_page_id);
-  auto KeyAt(int index) const -> KeyType;
+    INDEX_TEMPLATE_ARGUMENTS
+    class BPlusTreeLeafPage : public BPlusTreePage {
+    public:
+        // After creating a new leaf page from buffer pool, must call initialize
+        // method to set default values
+        void Init(page_id_t page_id, page_id_t parent_id = INVALID_PAGE_ID, int max_size = LEAF_PAGE_SIZE);
+        // helper methods
+        auto GetNextPageId() const -> page_id_t;
+        void SetNextPageId(page_id_t next_page_id);
+        auto KeyAt(int index) const -> KeyType;
 
- private:
-  page_id_t next_page_id_;
-  // Flexible array member for page data.
-  MappingType array_[1];
-};
+        auto LookUp(const KeyType &k, const KeyComparator &keyComparator, ValueType &value) -> bool;
+
+        auto FindPos(const KeyType &k, const KeyComparator &keyComparator) const -> int;
+
+        auto Insert(const KeyType &key, const ValueType &value, KeyComparator &keyComparator) -> int;
+
+        void MoveHalfTo(BPlusTreeLeafPage *siblingNode);
+
+        void CopyNFrom(MappingType * arr, int size);
+
+        auto RemoveAndDeleteRecord(const KeyType &key, const KeyComparator &keyComparator) -> int;
+
+        void MoveFirstToEndOf(BPlusTreeLeafPage *recipient);
+
+        void CopyLastFrom(const MappingType &item);
+
+        void MoveLastToFrontOf(BPlusTreeLeafPage *recipient);
+
+        void CopyFirstFrom(const MappingType &item);
+
+        void MoveAllTo(BPlusTreeLeafPage *recipient);
+
+        auto GetItem(int index) -> const MappingType &;
+
+    private:
+        page_id_t next_page_id_;
+        // Flexible array member for page data.
+        MappingType array_[1];
+    };
 }  // namespace bustub

@@ -21,19 +21,21 @@ namespace bustub {
         return page_type_ == IndexPageType::LEAF_PAGE;
     }
     auto BPlusTreePage::IsRootPage() const -> bool {
-        return page_type_ == IndexPageType::INVALID_INDEX_PAGE;
+        return parent_page_id_ == INVALID_PAGE_ID;
     }
     void BPlusTreePage::SetPageType(IndexPageType page_type) {
         page_type_ = page_type;
     }
-
+    auto BPlusTreePage::GetPageType() -> IndexPageType {
+        return page_type_;
+    }
 /*
  * Helper methods to get/set size (number of key/value pairs stored in that
  * page)
  */
     auto BPlusTreePage::GetSize() const -> int { return size_; }
     void BPlusTreePage::SetSize(int size) { size_ = size; }
-    void BPlusTreePage::IncreaseSize(int amount) { size_++; }
+    void BPlusTreePage::IncreaseSize(int amount) { size_ += amount; }
 
 /*
  * Helper methods to get/set max size (capacity) of the page
@@ -45,7 +47,11 @@ namespace bustub {
  * Helper method to get min page size
  * Generally, min page size == max page size / 2
  */
-    auto BPlusTreePage::GetMinSize() const -> int { return max_size_ / 2; }
+    auto BPlusTreePage::GetMinSize() const -> int {
+        if (IsLeafPage())
+            return max_size_ >> 1;
+        return (max_size_ + 1) >> 1;
+    }
 
 /*
  * Helper methods to get/set parent page id
