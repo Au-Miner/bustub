@@ -42,6 +42,7 @@ namespace bustub {
         Tuple toInsertTuple{};
         RID emitRid;
         int32_t insertCount = 0;
+        // 为什么这里要Next：实际上是在遍历物理计划树
         while (childExecutor->Next(&toInsertTuple, &emitRid)) {
             bool inserted = tableInfo->table_->InsertTuple(toInsertTuple, rid, exec_ctx_->GetTransaction());
             if (inserted) {
