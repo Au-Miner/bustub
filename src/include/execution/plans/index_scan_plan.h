@@ -23,32 +23,39 @@ namespace bustub {
 /**
  * IndexScanPlanNode identifies a table that should be scanned with an optional predicate.
  */
-class IndexScanPlanNode : public AbstractPlanNode {
- public:
-  /**
-   * Creates a new index scan plan node.
-   * @param output the output format of this scan plan node
-   * @param table_oid the identifier of table to be scanned
-   */
-  IndexScanPlanNode(SchemaRef output, index_oid_t index_oid)
-      : AbstractPlanNode(std::move(output), {}), index_oid_(index_oid) {}
+    class IndexScanPlanNode : public AbstractPlanNode {
+    public:
+        /**
+         * Creates a new index scan plan node.
+         * @param output the output format of this scan plan node
+         * @param table_oid the identifier of table to be scanned
+         */
+        IndexScanPlanNode(SchemaRef output, index_oid_t index_oid, AbstractExpressionRef filter_predicate = nullptr)
+                : AbstractPlanNode(std::move(output), {}),
+                  index_oid_(index_oid),
+                  filter_predicate_(std::move(filter_predicate)) {}
 
-  auto GetType() const -> PlanType override { return PlanType::IndexScan; }
+        auto GetType() const -> PlanType override { return PlanType::IndexScan; }
 
-  /** @return the identifier of the table that should be scanned */
-  auto GetIndexOid() const -> index_oid_t { return index_oid_; }
+        /** @return the identifier of the table that should be scanned */
+        auto GetIndexOid() const -> index_oid_t { return index_oid_; }
 
-  BUSTUB_PLAN_NODE_CLONE_WITH_CHILDREN(IndexScanPlanNode);
+        BUSTUB_PLAN_NODE_CLONE_WITH_CHILDREN(IndexScanPlanNode);
 
-  /** The table whose tuples should be scanned. */
-  index_oid_t index_oid_;
+        /** The table whose tuples should be scanned. */
+        index_oid_t index_oid_;
 
-  // Add anything you want here for index lookup
+        // Add anything you want here for index lookup
 
- protected:
-  auto PlanNodeToString() const -> std::string override {
-    return fmt::format("IndexScan {{ index_oid={} }}", index_oid_);
-  }
-};
+        AbstractExpressionRef filter_predicate_;
+
+    protected:
+        auto PlanNodeToString() const -> std::string override {
+            if (filter_predicate_) {
+                return fmt::format("IndexScan {{ index_oid={}, filter={} }}", index_oid_, filter_predicate_);
+            }
+            return fmt::format("IndexScan {{ index_oid={} }}", index_oid_);
+        }
+    };
 
 }  // namespace bustub
